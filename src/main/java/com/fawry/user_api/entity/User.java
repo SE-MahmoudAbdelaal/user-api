@@ -1,71 +1,113 @@
 package com.fawry.user_api.entity;
 
-
+import com.fawry.user_api.entity.enums.Gender;
+import com.fawry.user_api.entity.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
 @Data
-public class User {
+@RequiredArgsConstructor
+@NoArgsConstructor(force = true)
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long userId;
 
-    @Size(max = 50, message = "First name must be less than or equal to 50 characters")
-    @NotNull(message = "First name is required")
-    @Column(name = "first_name")
+    @Column(name = "first_name", length = 50, nullable = false)
+    @NotNull(message = "First name cannot be null")
+    @Size(max = 50, message = "First name cannot exceed 50 characters")
     private String firstName;
 
-    @NotNull(message = "Last name is required")
-    @Size(max = 50, message = "Last name must be less than or equal to 50 characters")
-    @Column(name = "last_name")
+    @Column(name = "last_name", length = 50, nullable = false)
+    @NotNull(message = "Last name cannot be null")
+    @Size(max = 50, message = "Last name cannot exceed 50 characters")
     private String lastName;
 
-    @NotNull(message = "Phone number is required")
-    @Size(max = 20, message = "Phone number must be less than or equal to 20 characters")
-    @Column(name = "phone")
+    @Column(name = "phone", length = 20, nullable = false)
+    @NotNull(message = "Phone number cannot be null")
+    @Size(min = 10, max = 15, message = "Phone number must be between 10 and 15 digits")
     private String phone;
 
-    @Size(max = 255, message = "Photo URL must be less than or equal to 255 characters")
-    @Column(name = "photo")
+    @Column(name = "photo", length = 255)
     private String photo = "default.jpg";
 
-    @NotNull(message = "Password is required")
+    @Column(name = "password", length = 255, nullable = false)
+    @NotNull(message = "Password cannot be null")
     @Size(min = 8, max = 255, message = "Password must be between 8 and 255 characters")
-    @Column(name = "password")
     private String password;
 
-    @NotNull(message = "Email is required")
+    @Column(name = "email", length = 100, nullable = false, unique = true)
     @Email(message = "Email should be valid")
-    @Size(max = 100, message = "Email must be less than or equal to 100 characters")
-
-    @Column(name = "email")
+    @NotNull(message = "Email cannot be null")
     private String email;
 
-    @Column(name = "is_active", insertable = false)
-    private Boolean isActive;
+    @Column(name = "is_active")
+    private Boolean isActive = false;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private java.sql.Timestamp createdAt;
+    @Column(name = "created_at", updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private final LocalDateTime createdAt;
 
-
-    @Column(name = "updated_at")
-    private java.sql.Timestamp updatedAt;
+    @Column(name = "updated_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    private final LocalDateTime updatedAt;
 
     @Column(name = "deleted_at")
-    private java.sql.Timestamp deletedAt;
+    private final LocalDateTime deletedAt;
 
-    @ManyToOne
-    @JoinColumn(name = "role_id", referencedColumnName = "role_id")
-    private Role role = new Role(1L,"user");
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", length = 10, nullable = false)
+    private Role role = Role.USER;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender", length = 6, nullable = false)
+    private Gender gender;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority(role.name()));
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
 }
-

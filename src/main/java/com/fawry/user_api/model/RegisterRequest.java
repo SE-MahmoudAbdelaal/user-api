@@ -5,16 +5,16 @@ import com.fawry.user_api.entity.enums.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
-@Setter
+@Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
-public class UserRegistrationDTO {
-
-    private Long userId;
+public class RegisterRequest {
 
     @NotNull(message = "First name is required")
     @Size(max = 50, message = "First name must be less than or equal to 50 characters")

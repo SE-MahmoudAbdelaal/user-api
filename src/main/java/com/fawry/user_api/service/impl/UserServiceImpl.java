@@ -10,6 +10,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -25,8 +27,14 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+
     @Override
     public User updateUser(UserRegistrationDTO userRegistrationDTO) {
         return null;
+    }
+
+    @Override
+    public List<User> getUsers() {
+        return userRepository.findAll();
     }
 }
