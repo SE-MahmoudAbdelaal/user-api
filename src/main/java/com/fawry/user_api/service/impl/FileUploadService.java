@@ -1,7 +1,9 @@
 package com.fawry.user_api.service.impl;
 
+import com.fawry.user_api.Exceptions.UserException;
 import com.fawry.user_api.entity.User;
 import com.fawry.user_api.repository.UserRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -61,7 +63,7 @@ public class FileUploadService {
 
         if (pathType.contains("users")) {
             // update author image path
-            User user = userRepository.getReferenceById(id.intValue());
+            User user = userRepository.findById(id).orElseThrow(() -> new UserException("User Not Found ", HttpStatus.NOT_FOUND));
             user.setPhoto(imagePath);
             userRepository.save(user);
         }

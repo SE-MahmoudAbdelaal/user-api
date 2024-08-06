@@ -11,10 +11,13 @@ import com.fawry.user_api.repository.UserRepository;
 import com.fawry.user_api.security.JwtService;
 import com.fawry.user_api.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import javax.naming.AuthenticationException;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +34,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             requestModel.setRole(Role.USER);
         }
 
+        if (requestModel.getRole().equals(Role.ADMIN)) {
+            throw new UserException("Not allowed to register admin", HttpStatus.FORBIDDEN);
+        }
+
+
         User user = userAuthMapper.toEntity(requestModel);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
@@ -41,15 +49,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public AuthenticationResponse login(AuthenticationRequest requestModel) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        requestModel.getEmail(), requestModel.getPassword()));
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            requestModel.getEmail(), requestModel.getPassword()));
 
-        User user = userRepository
-                .findByEmail(requestModel.getEmail())
-                .orElseThrow(() -> new UserException("email or phone not found"));
+            User user = userRepository
+                    .findByEmail(requestModel.getEmail())
+                    .orElseThrow(() -> new UserException("Incorrect email or password", HttpStatus.UNAUTHORIZED));
 
-        String token = jwtService.generateToken(user);
-        return userAuthMapper.toDTO(token);
+            String token = jwtService.generateToken(user);
+            return userAuthMapper.toDTO(token);
+        } catch (Exception e) {
+            throw new UserException("Incorrect email or password", HttpStatus.UNAUTHORIZED);
+        }
     }
 }

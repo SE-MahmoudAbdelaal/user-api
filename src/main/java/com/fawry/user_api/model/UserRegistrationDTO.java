@@ -2,6 +2,8 @@ package com.fawry.user_api.model;
 
 import com.fawry.user_api.entity.enums.Gender;
 import com.fawry.user_api.entity.enums.Role;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -41,9 +43,11 @@ public class UserRegistrationDTO {
     private String email;
 
     @NotNull(message = "Role is required")
+    @Enumerated(EnumType.STRING)
     private Role role;
 
     @NotNull(message = "Gender is required")
+    @Enumerated(EnumType.STRING)
     private Gender gender;
 
 }
